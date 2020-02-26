@@ -41,6 +41,7 @@ STRUCTURES
 ==========
 struct bbosinfo
 {
+    word Version
     word Address_Start
     word Address_End
     word Interrupt_Handler
@@ -144,6 +145,8 @@ Write Char              0x1003  Char, MoveCursor        None            1.0
 Write String            0x1004  StringZ, NewLine        None            1.0
 Scroll Screen           0x1005  Num lines to scroll     None            1.0
 Get Screen Size         0x1006  OUT Width, OUT Height   Height, Width   1.0
+Get Screen Count        0x1007  OUT Count               Count           1.1
+Set Active Screen       0x1008  Index                   None            1.1
 
 -- Drive
 Get Drive Count         0x2000  OUT Drive Count         Drive Count     1.0
@@ -166,6 +169,7 @@ Set RTC Date            0x4004
 Set RTC Alarm           0x4005
 Reset RTC Alarm         0x4006
 
+Comms not supported at this time
 -- Comms
 Comms Attached          0x5000  OUT Attached            Attached        1.0
 Query                   0x5001  *CommsInfo              None            1.0
@@ -240,12 +244,12 @@ Arguments: StringZ, NewLine
 Returns: None
 Since: v1.0
 
-'StringZ' refers to a zero terminated string, where is char is 16 bits.
+'StringZ' refers to a zero terminated string, where each character is 16 bits.
 As each character is written, if the high 9 bits of are unset (i.e, the
 character has no format), a default format of 0xF000 is applied, which
 is white on black.
 The cursor is progressed by the number of characters in the string. If the
-string runs off the buttom of the screen, the screen is scrolled in order
+string runs off the bottom of the screen, the screen is scrolled in order
 to display the entire string. If 'NewLine' is non zero, the cursor will
 be rounded up to the next line after being progressed.
 
@@ -264,6 +268,23 @@ Returns: Height, Width
 Since: v1.0
 
 Gets size of the screen (measured in characters).
+
+'Get Screen Count'
+---------------
+Arguments: None (1 placeholder)
+Returns: Count
+Since: v1.1
+
+Gets the number of supported display devices connected.
+
+'Set Active Screen'
+-----------------
+Arguments: Index
+Returns: None
+Since: v1.1
+
+Sets the active screen. Index starts from 0, and must be less than
+screen count. All screen operations take place on the active screen.
 
 'Get Drive Count'
 -----------------

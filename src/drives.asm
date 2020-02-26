@@ -1,79 +1,34 @@
 
+#include "drives/m35fd.asm"
+
+init_drive:
+    SET PC, POP
+
 drive_irq:
     IFE J, 0x0000
         SET PC, .getcount
     SET B, [Z+0]
-    IFL B, [drive_count]
+    IFL B, [drive_class+CLASS_COUNT]
         SET PC, .valid
     SET PC, POP
 
 .valid:
-    ADD B, drives
+    ADD B, [drive_class+CLASS_ARRAY]
+    SET B, [B]
+    SET C, [B+HW_INTERFACE]
+    SET B, [B+HW_PORT]
+
     IFE J, 0x0001
-        SET PC, .getstatus
+        SET PC, [C+DRIVE_ITF_GETSTATUS]
     IFE J, 0x0002
-        SET PC, .getparam
+        SET PC, [C+DRIVE_ITF_GETPARAM]
     IFE J, 0x0003
-        SET PC, .read
+        SET PC, [C+DRIVE_ITF_READ]
     IFE J, 0x0004
-        SET PC, .write
+        SET PC, [C+DRIVE_ITF_WRITE]
     SET PC, POP
 
 .getcount:
-    SET [Z+0], [drive_count]
-    SET PC, POP
-
-.getstatus:
-    SET A, 0
-    HWI [B]
-    SHL B, 8
-    AND C, 0xFF
-    BOR B, C
-    SET [Z+0], B
-    SET PC, POP
-
-.getparam:
-    SET A, [Z+1]
-    SET [A+DRIVE_SECT_SIZE], 512
-    SET [A+DRIVE_SECT_COUNT], 1440
-    SET PC, POP
-
-.read:
-    SET PUSH, X
-    SET PUSH, Y
-        SET PUSH, B
-            SET X, [Z+2]
-            SET Y, [Z+1]
-            SET A, 2
-            HWI [B]
-        SET B, POP
-    SET Y, POP
-    SET X, POP
-    SET PC, .wait
-
-.write:
-    SET PUSH, X
-    SET PUSH, Y
-        SET PUSH, B
-            SET X, [Z+2]
-            SET Y, [Z+1]
-            SET A, 3
-            HWI [B]
-        SET B, POP
-    SET Y, POP
-    SET X, POP
-    ; SET PC, .wait ; fall through right below
-
-.wait:
-    SET A, 0
-    SET PUSH, B
-        HWI [B]
-    SET A, B
-    SET B, POP
-    IFE A, DRIVE_STATE_BUSY
-        SET PC, .wait
-    SET [Z+0], 0
-    IFE C, 0
-        SET [Z+0], 1
+    SET [Z+0], [drive_class+CLASS_COUNT]
     SET PC, POP
 
